@@ -1,7 +1,11 @@
 import Head from "next/head";
 import Form from "../components/Form";
+import StyleGuide from "../components/StyleGuide";
+import { useState } from "react";
 
 export default function Home() {
+  const [data, setData] = useState(null);
+
   return (
     <div>
       <Head>
@@ -13,7 +17,7 @@ export default function Home() {
         <link rel="icon" href="/favicon.ico" />
       </Head>
 
-      <Form />
+      {data ? <StyleGuide data={data} /> : <Form setData={setData} />}
     </div>
   );
 }

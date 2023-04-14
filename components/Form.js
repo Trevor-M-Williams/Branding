@@ -18,8 +18,8 @@ const CustomButton = styled(Button)({
   },
 });
 
-const Form = () => {
-  const [bgs, setBgs] = useState(["bg-white", "bg-white", "bg-white"]);
+const Form = ({ setData }) => {
+  const submitBtnRef = useRef(null);
   const [formValues, setFormValues] = useState({
     companyName: "",
     industry: "",
@@ -32,7 +32,6 @@ const Form = () => {
       loudsubdued: "",
     },
   });
-  const circles = useRef(null);
 
   const traitPairs = [
     "feminine/masculine",
@@ -57,14 +56,41 @@ const Form = () => {
 
   async function handleSubmit(event) {
     event.preventDefault();
+    submitBtnRef.current.disabled = true;
+    submitBtnRef.current.textContent = "Generating...";
+
     const data = { formValues };
     const res = await fetch("/api/chat", {
       method: "POST",
       body: JSON.stringify(data),
     });
     const json = await res.json();
-    const result = json.result.split("\n");
-    result.forEach((line, i) => console.log(i + ": " + line));
+    const result = json.result.replaceAll("\n", "").split("/end/");
+
+    const tagline = result[1].split(":")[1].trim();
+    const typography = result[2].split(":")[1].trim();
+    const primaryColor = result[3].split(":")[1].trim();
+    const accentColor = result[4].split(":")[1].trim();
+    const neutralColor = result[5].split(":")[1].trim();
+    const summary = result[6].split(":")[1].trim();
+
+    const hex1 = primaryColor.slice(0, 7);
+    const hex2 = accentColor.slice(0, 7);
+    const hex3 = neutralColor.slice(0, 7);
+
+    const formData = {
+      tagline,
+      typography,
+      primaryColor,
+      accentColor,
+      neutralColor,
+      summary,
+      hex1,
+      hex2,
+      hex3,
+    };
+
+    setData(formData);
   }
 
   async function testAPI() {
@@ -87,24 +113,31 @@ const Form = () => {
     });
     const json = await res.json();
     const result = json.result.replaceAll("\n", "").split("/end/");
-    // result = result.filter((line) => line !== "");
 
-    console.log(result);
+    const tagline = result[1].split(":")[1].trim();
+    const typography = result[2].split(":")[1].trim();
+    const primaryColor = result[3].split(":")[1].trim();
+    const accentColor = result[4].split(":")[1].trim();
+    const neutralColor = result[5].split(":")[1].trim();
+    const summary = result[6].split(":")[1].trim();
 
-    // const tagline = result[1].split(":")[1].trim();
-    // const typography = result[2].split(":")[1].trim();
-    // const primaryColor = result[3].split(":")[1].trim();
-    // const accentColor = result[4].split(":")[1].trim();
-    // const neutralColor = result[5].split(":")[1].trim();
-    // const summary = result[6].split(":")[1].trim();
+    const hex1 = primaryColor.slice(0, 7);
+    const hex2 = accentColor.slice(0, 7);
+    const hex3 = neutralColor.slice(0, 7);
 
-    // const hex1 = primaryColor.slice(0, 7);
-    // const hex2 = accentColor.slice(0, 7);
-    // const hex3 = neutralColor.slice(0, 7);
+    const formData = {
+      tagline,
+      typography,
+      primaryColor,
+      accentColor,
+      neutralColor,
+      summary,
+      hex1,
+      hex2,
+      hex3,
+    };
 
-    // circles.current.children[0].style.backgroundColor = hex1;
-    // circles.current.children[1].style.backgroundColor = hex2;
-    // circles.current.children[2].style.backgroundColor = hex3;
+    setData(formData);
   }
 
   const renderTraitRadioGroup = (traitPair) => {
@@ -132,14 +165,14 @@ const Form = () => {
   };
 
   return (
-    <Container maxWidth="sm">
+    <Container maxWidth="sm" className="mt-8">
       <div className="flex items-center justify-between">
         <Typography variant="h4" component="h1">
           Company Profile
         </Typography>
-        <CustomButton variant="contained" onClick={testAPI}>
+        {/* <CustomButton variant="contained" onClick={testAPI}>
           Test API
-        </CustomButton>
+        </CustomButton> */}
       </div>
       <form onSubmit={handleSubmit}>
         <TextField
@@ -166,16 +199,15 @@ const Form = () => {
         {traitPairs.map((traitPair) => (
           <div key={traitPair}>{renderTraitRadioGroup(traitPair)}</div>
         ))}
-        <CustomButton variant="contained" type="submit">
+        <CustomButton
+          ref={submitBtnRef}
+          variant="contained"
+          type="submit"
+          className="mt-4"
+        >
           Submit
         </CustomButton>
       </form>
-
-      <div ref={circles} className="flex justify-between mt-10">
-        <div className={`h-40 w-40 rounded-full border`}></div>
-        <div className={`h-40 w-40 rounded-full border`}></div>
-        <div className={`h-40 w-40 rounded-full border`}></div>
-      </div>
     </Container>
   );
 };
