@@ -17,7 +17,7 @@ export default async function (req, res) {
   }
 
   const data = JSON.parse(req.body);
-  const { industry, companyName } = data.formValues;
+  const { industry, companyName } = data;
   const {
     femininemasculine,
     playfulserious,
@@ -25,24 +25,33 @@ export default async function (req, res) {
     modernclassic,
     youthfulmature,
     loudsubdued,
-  } = data.formValues.traits;
+  } = data.traits;
   const prompt = `
-    Generate a brand identity for a company in the ${industry} industry with the following traits: 
+    Generate a brand identity for a company in the ${industry} industry with the following traits:
     ${femininemasculine}, ${playfulserious}, ${luxuriousaffordable}, ${modernclassic}, ${youthfulmature}, ${loudsubdued}.
     The company name is ${companyName}.
-    Also generate a color palette (3 colors - base, accent, neutral) and provide reasoning for each color.
-    The response should be in the following form:
-    [Company Name] Brand Identity/end/
-    Tagline: [tagline]/end/
-    Typography: [description of the ideal font with examples]/end/
-    Primary Color: [hex code - explanation]/end/
-    Accent Color: [hex code - explanation]/end/
-    Neutral Color: [hex code - explanation]/end/
-    Summary: [high level description of the brand in 4-5 sentences]
-    include /end/ where indicated
+    Also generate a color palette (3 colors - base, accent, neutral - neutral cannot be white) and provide reasoning for each color.
+    The response should be in json format as shown below:
+    {
+        "tagline": [tagline],
+        "summary": [summary of the brand in 4-5 sentences],
+        "typography": [description of the ideal font with examples],
+        "primaryColor": {
+          hex: [hex code],
+          description: [explanation]
+        },
+        "accentColor": {
+          hex: [hex code],
+          description: [explanation]
+        },
+        "neutralColor": {
+          hex: [hex code],
+          description: [explanation]
+        }
+      }
   `;
-  // console.log(prompt);
-  // res.status(200).json({ prompt });
+  // console.log(data);
+  // res.status(200).json(data);
 
   try {
     const completion = await openai.createChatCompletion({

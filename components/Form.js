@@ -1,4 +1,4 @@
-import { useState, useRef } from "react";
+import { useState } from "react";
 import {
   FormControl,
   FormControlLabel,
@@ -7,20 +7,11 @@ import {
   TextField,
   Typography,
   Container,
-  Button,
 } from "@mui/material";
-import { styled } from "@mui/system";
-
-const CustomButton = styled(Button)({
-  color: "#333",
-  "&:hover": {
-    color: "#fff",
-  },
-});
 
 const Form = ({ setData }) => {
-  const submitBtnRef = useRef(null);
-  const [formValues, setFormValues] = useState({
+  const [submitting, setSubmitting] = useState(false);
+  const [formData, setFormData] = useState({
     companyName: "",
     industry: "",
     traits: {
@@ -44,58 +35,46 @@ const Form = ({ setData }) => {
 
   function handleInputChange(event) {
     const { name, value } = event.target;
-    setFormValues({ ...formValues, [name]: value });
+    setFormData({ ...formData, [name]: value });
   }
 
   function handleTraitChange(trait, value) {
-    setFormValues({
-      ...formValues,
-      traits: { ...formValues.traits, [trait]: value },
+    setFormData({
+      ...formData,
+      traits: { ...formData.traits, [trait]: value },
     });
   }
 
-  async function handleSubmit(event) {
-    event.preventDefault();
-    submitBtnRef.current.disabled = true;
-    submitBtnRef.current.textContent = "Generating...";
+  async function handleSubmit(event, data) {
+    if (event) event.preventDefault();
+    setSubmitting(true);
 
-    const data = { formValues };
+    if (!data)
+      data = { ...formData, industry: formData.industry.toLowerCase() };
+
     const res = await fetch("/api/chat", {
       method: "POST",
       body: JSON.stringify(data),
     });
     const json = await res.json();
-    const result = json.result.replaceAll("\n", "").split("/end/");
-
-    const tagline = result[1].split(":")[1].trim();
-    const typography = result[2].split(":")[1].trim();
-    const primaryColor = result[3].split(":")[1].trim();
-    const accentColor = result[4].split(":")[1].trim();
-    const neutralColor = result[5].split(":")[1].trim();
-    const summary = result[6].split(":")[1].trim();
-
-    const hex1 = primaryColor.slice(0, 7);
-    const hex2 = accentColor.slice(0, 7);
-    const hex3 = neutralColor.slice(0, 7);
-
-    const formData = {
-      tagline,
-      typography,
-      primaryColor,
-      accentColor,
-      neutralColor,
-      summary,
-      hex1,
-      hex2,
-      hex3,
-    };
-
-    setData(formData);
+    console.log(json);
+    const result = json.result
+      .replaceAll("\n", "")
+      .replaceAll("/", "")
+      .replaceAll(/,\s*\}/g, "}");
+    console.log(result);
+    const parsedResult = JSON.parse(result);
+    console.log(parsedResult);
+    setData({
+      ...parsedResult,
+      companyName: data.companyName,
+    });
+    setSubmitting(false);
   }
 
   async function testAPI() {
-    const name = "CyberTekIQ";
-    const industry = "Cyber Security";
+    const companyName = "CyberTekIQ";
+    const industry = "cyber security";
     const traits = {
       femininemasculine: "masculine",
       playfulserious: "serious",
@@ -104,40 +83,8 @@ const Form = ({ setData }) => {
       youthfulmature: "mature",
       loudsubdued: "subdued",
     };
-    const data = {
-      formValues: { companyName: name, industry: industry, traits: traits },
-    };
-    const res = await fetch("/api/chat", {
-      method: "POST",
-      body: JSON.stringify(data),
-    });
-    const json = await res.json();
-    const result = json.result.replaceAll("\n", "").split("/end/");
-
-    const tagline = result[1].split(":")[1].trim();
-    const typography = result[2].split(":")[1].trim();
-    const primaryColor = result[3].split(":")[1].trim();
-    const accentColor = result[4].split(":")[1].trim();
-    const neutralColor = result[5].split(":")[1].trim();
-    const summary = result[6].split(":")[1].trim();
-
-    const hex1 = primaryColor.slice(0, 7);
-    const hex2 = accentColor.slice(0, 7);
-    const hex3 = neutralColor.slice(0, 7);
-
-    const formData = {
-      tagline,
-      typography,
-      primaryColor,
-      accentColor,
-      neutralColor,
-      summary,
-      hex1,
-      hex2,
-      hex3,
-    };
-
-    setData(formData);
+    const data = { companyName, industry, traits };
+    handleSubmit(null, data);
   }
 
   const renderTraitRadioGroup = (traitPair) => {
@@ -146,7 +93,7 @@ const Form = ({ setData }) => {
       <FormControl component="fieldset">
         <RadioGroup
           row
-          value={formValues.traits[`${traitA}${traitB}`]}
+          value={formData.traits[`${traitA}${traitB}`]}
           onChange={(event) =>
             handleTraitChange(`${traitA}${traitB}`, event.target.value)
           }
@@ -170,16 +117,22 @@ const Form = ({ setData }) => {
         <Typography variant="h4" component="h1">
           Company Profile
         </Typography>
-        {/* <CustomButton variant="contained" onClick={testAPI}>
-          Test API
-        </CustomButton> */}
+        <button
+          onClick={testAPI}
+          disabled={submitting}
+          className={`px-4 py-1.5 mt-4 bg-blue-400 uppercase rounded text-white border border-blue-400 hover:text-blue-400 hover:bg-white ${
+            submitting ? "hover:bg-blue-400 hover:text-white" : null
+          }`}
+        >
+          {submitting ? "Generating..." : "Test"}
+        </button>
       </div>
       <form onSubmit={handleSubmit}>
         <TextField
           fullWidth
           label="Company Name"
           name="companyName"
-          value={formValues.companyName}
+          value={formData.companyName}
           onChange={handleInputChange}
           margin="normal"
           required
@@ -188,7 +141,7 @@ const Form = ({ setData }) => {
           fullWidth
           label="Industry"
           name="industry"
-          value={formValues.industry}
+          value={formData.industry}
           onChange={handleInputChange}
           margin="normal"
           required
@@ -199,14 +152,15 @@ const Form = ({ setData }) => {
         {traitPairs.map((traitPair) => (
           <div key={traitPair}>{renderTraitRadioGroup(traitPair)}</div>
         ))}
-        <CustomButton
-          ref={submitBtnRef}
-          variant="contained"
+        <button
           type="submit"
-          className="mt-4"
+          disabled={submitting}
+          className={`px-4 py-1.5 mt-4 bg-blue-400 uppercase rounded text-white border border-blue-400 hover:text-blue-400 hover:bg-white ${
+            submitting ? "hover:bg-blue-400 hover:text-white" : null
+          }`}
         >
-          Submit
-        </CustomButton>
+          {submitting ? "Generating..." : "Submit"}
+        </button>
       </form>
     </Container>
   );
