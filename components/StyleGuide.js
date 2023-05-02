@@ -17,8 +17,11 @@ function StyleGuide({ data }) {
       <p className="mb-2">{data.accentColor.description}</p>
       <p className="mb-2">{data.neutralColor.description}</p>
       <div className="flex h-80 mt-4 justify-between">
-        {colors.map((color) => (
-          <div className="w-[32%] h-full border shadow-xl rounded-lg overflow-hidden">
+        {colors.map((color, i) => (
+          <div
+            key={i}
+            className="w-[32%] h-full border shadow-xl rounded-lg overflow-hidden"
+          >
             <div className="h-2/3" style={{ background: `${color.hex}` }}></div>
             <div className="bg-white h-1/3 p-3 border-t-2">
               <div>{color.name}</div>
