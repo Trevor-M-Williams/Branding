@@ -33,22 +33,22 @@ export default async function (req, res) {
     Also generate a color palette (3 colors - base, accent, neutral - neutral cannot be white) and provide reasoning for each color.
     The response should be in json format as shown below:
     {
-        "tagline": [tagline],
-        "summary": [summary of the brand in 4-5 sentences],
-        "typography": [description of the ideal font with examples],
-        "primaryColor": {
-          hex: [hex code],
-          description: [explanation]
-        },
-        "accentColor": {
-          hex: [hex code],
-          description: [explanation]
-        },
-        "neutralColor": {
-          hex: [hex code],
-          description: [explanation]
-        }
+      "tagline": [tagline],
+      "summary": [summary of the brand in 4-5 sentences],
+      "typography": [description of the ideal font with examples],
+      "primaryColor": {
+        hex: [hex code],
+        description: [explanation]
+      },
+      "accentColor": {
+        hex: [hex code],
+        description: [explanation]
+      },
+      "neutralColor": {
+        hex: [hex code],
+        description: [explanation]
       }
+    }
   `;
   // console.log(data);
   // res.status(200).json(data);
